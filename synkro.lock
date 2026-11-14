@@ -4,8 +4,8 @@
 # synkro.toml to keep it current automatically.
 schema_version = 3
 synkro_version = "0.3.16 (441287b)"
-manifest_digest = "sha256:85bc176be2b242b41470bbccf96ba4826e582cba53984dc391f9b17221e6fa2c"
-ruleset_digest = "sha256:4b9e0c855c92c88127cee7fdac203e2436ab71cfdbfd03f4ff564ffc21d81eda"
+manifest_digest = "sha256:ea57a978bbf53409ac9244c300dacf185664e91767f87badfcf55b5ec495fddc"
+ruleset_digest = "sha256:6d67e5d8e5d9966edc4dc72d708265d60d9509ad5f78440c7a89312da4859d2c"
 
 [[packages]]
 dependency = "cwe-baseline"
@@ -35,34 +35,3 @@ digest = "sha256:3d4d09adbca572ac72330094ac11ac6d73a0c2e3ec5c0ff5c88b9bc0ab91fb1
 [[packages.rules]]
 id = "cwe-94-dynamic-code-execution"
 digest = "sha256:307540af5945364bf1dd0e3780eae8268ee2cfb1942f1dc184e66e958e8437e5"
-
-[[packages]]
-dependency = "tf-review"
-name = "tf-review"
-digest = "sha256:ab304079677f0f99d0e1205dd45a67ad0de5074a02f5f3a5f4c72ac9236a7c78"
-head_commit = "d41070425abfb15c9b82c4853ecacf46668ec4d0"
-dirty = true
-
-[packages.source]
-source = "path"
-path = ".synkro/policy"
-
-[[packages.rules]]
-id = "api-process-no-direct-database"
-digest = "sha256:be6b7072bcbe1e70b8c692fc8275230b3a2efe5fda1ed48399f9828cf8a29a88"
-
-[[packages.rules]]
-id = "fastify-route-body-schema"
-digest = "sha256:a0a5f6342d29344007f7212fbf905e43716ee23c976dde6d589eb664699cfa8b"
-
-[[packages.rules]]
-id = "pg-parameterized-queries"
-digest = "sha256:f9d02911dcca247fd32ca0e839dc2ef42d90b1e48a467ff03d2e3597c1a3eae9"
-
-[[packages.rules]]
-id = "temporal-activity-idempotent-charge"
-digest = "sha256:377daa2a36382c25cd6a64c5ac1267691e144a4028938be52aaa21e4ad9da27d"
-
-[[packages.rules]]
-id = "temporal-reuse-connection"
-digest = "sha256:3907a8c5b154b0a9b300c0bd5d1fea984c8ba2c5fc4c1d9accea8e51e1b09806"
