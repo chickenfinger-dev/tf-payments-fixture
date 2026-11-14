@@ -4,8 +4,8 @@
 # synkro.toml to keep it current automatically.
 schema_version = 3
 synkro_version = "0.3.16 (441287b)"
-manifest_digest = "sha256:77a09f41f89ab127833d8de76c8f0c130d9a86cab6bf246094537540c8cf59f3"
-ruleset_digest = "sha256:03242a4f65d3c072c9a2b88aae4b79758f22c3407f60f708c408d8ea143aea35"
+manifest_digest = "sha256:ea57a978bbf53409ac9244c300dacf185664e91767f87badfcf55b5ec495fddc"
+ruleset_digest = "sha256:6d67e5d8e5d9966edc4dc72d708265d60d9509ad5f78440c7a89312da4859d2c"
 
 [[packages]]
 dependency = "cwe-baseline"
@@ -35,26 +35,3 @@ digest = "sha256:3d4d09adbca572ac72330094ac11ac6d73a0c2e3ec5c0ff5c88b9bc0ab91fb1
 [[packages.rules]]
 id = "cwe-94-dynamic-code-execution"
 digest = "sha256:307540af5945364bf1dd0e3780eae8268ee2cfb1942f1dc184e66e958e8437e5"
-
-[[packages]]
-dependency = "tf-review"
-name = "tf-review"
-digest = "sha256:df180c166e98f3c54f1944632f6e1e010b6d618357592ba483c840dd594cc2de"
-head_commit = "58f69c3ad847930e80d7dd44f847692d61781cfa"
-dirty = true
-rules = []
-
-[packages.source]
-source = "path"
-path = ".synkro/policy"
-
-[[packages]]
-dependency = "user"
-name = "user"
-digest = "sha256:c6cb5b681c3b6aed4c10388983386a0331e31ae295c72a1edaf2f77e74be0473"
-dirty = true
-rules = []
-
-[packages.source]
-source = "path"
-path = "/root/.synkro/policy"
