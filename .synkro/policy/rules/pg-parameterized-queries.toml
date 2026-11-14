@@ -1,0 +1,40 @@
+# Source: Synkro finding 01a1d893-98c7-7031-841c-b6353d98dfe1
+# Basis: node-postgres queries documentation as recorded by the finding; code pinned at commit 58f69c3.
+schema_version = 3
+id = "pg-parameterized-queries"
+title = "Use parameterized SQL queries"
+description = "SQL text sent to Postgres must not contain interpolated request or workflow values. It is a violation to build SQL by putting such a value into the query string, whether with a template literal ${...} substitution or with string concatenation. Queries that use numbered placeholders such as $1 with a values array are allowed, and so are SQL text with no interpolated value and interpolated strings that are not SQL."
+mode = "block"
+severity = "high"
+remediation = "Replace each interpolated value with a numbered placeholder and pass the values in the parameter array, for example pg.query('SELECT id FROM orders WHERE id = $1', [id])."
+evaluation = { kind = "semantic" }
+
+[[examples]]
+expected = "violation"
+input = { kind = "content", path = "src/server.ts", content = "    `SELECT id, status, amount FROM orders WHERE id = '${id}'`", coverage = "fragment" }
+note = "Pinned GET /orders/:id query: the id path parameter is interpolated into the SQL."
+
+[[examples]]
+expected = "violation"
+input = { kind = "content", path = "src/activities.ts", content = "    `INSERT INTO orders (user_id, amount, charge_id, status) VALUES ('${userId}', ${amount}, '${chargeId}', 'paid')`", coverage = "fragment" }
+note = "Pinned persistOrder query: workflow arguments are interpolated into the SQL."
+
+[[examples]]
+expected = "violation"
+input = { kind = "content", path = "src/activities.ts", content = "await pg.query(\"SELECT id FROM orders WHERE user_id = '\" + userId + \"'\");", coverage = "fragment" }
+note = "Concatenation puts the value into the SQL text just as a template literal does."
+
+[[examples]]
+expected = "ok"
+input = { kind = "content", path = "src/activities.ts", content = "await pg.query(\"INSERT INTO orders (user_id, amount, charge_id, status) VALUES ($1, $2, $3, 'paid')\", [userId, amount, chargeId]);", coverage = "fragment" }
+note = "Values travel in the parameter array; the SQL text holds only placeholders and a constant."
+
+[[examples]]
+expected = "ok"
+input = { kind = "content", path = "src/activities.ts", content = "const { rows } = await pg.query(`SELECT count(*) AS paid FROM orders WHERE status = 'paid'`);", coverage = "fragment" }
+note = "A template literal with no interpolated value is static SQL."
+
+[[examples]]
+expected = "ok"
+input = { kind = "content", path = "src/server.ts", content = "    workflowId: `payment-${userId}-${Date.now()}`,", coverage = "fragment" }
+note = "Pinned: a request value interpolated into a workflow ID, not into SQL."

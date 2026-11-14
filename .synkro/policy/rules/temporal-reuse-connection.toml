@@ -1,0 +1,40 @@
+# Source: Synkro finding 01a1d893-98c2-7082-a566-6394217d95eb
+# Basis: Temporal TypeScript client documentation as recorded by the finding; code pinned at commit 58f69c3.
+schema_version = 3
+id = "temporal-reuse-connection"
+title = "Reuse one Temporal connection"
+description = "Each process creates one Temporal Connection when it starts and reuses it for every Client and every request. It is a violation to open a new Connection for each request, whether inside a route handler or inside a helper that a handler calls on every request. A Connection or NativeConnection created once at process startup is allowed, and so is building a Client from that shared connection."
+mode = "flag"
+severity = "low"
+remediation = "Create one Connection when the process starts, keep it for the life of the process, and build every Client from it."
+evaluation = { kind = "semantic" }
+
+[[examples]]
+expected = "violation"
+input = { kind = "content", path = "src/server.ts", content = '  const connection = await Connection.connect({ address: "localhost:7233" });', coverage = "fragment" }
+note = "Pinned: this line is inside temporalClient(), which the POST /payments handler calls on every request."
+
+[[examples]]
+expected = "violation"
+input = { kind = "content", path = "src/server.ts", content = '  const client = await temporalClient();', coverage = "fragment" }
+note = "Pinned: the route handler calls the connecting helper once per request."
+
+[[examples]]
+expected = "violation"
+input = { kind = "content", path = "src/routes/refunds.ts", content = 'fastify.post("/refunds/:id", async (req) => { const connection = await Connection.connect({ address: "localhost:7233" }); const client = new Client({ connection }); });', coverage = "fragment" }
+note = "Connects inside the handler itself, so every request opens a Connection."
+
+[[examples]]
+expected = "ok"
+input = { kind = "content", path = "src/worker.ts", content = '  const connection = await NativeConnection.connect({ address: "localhost:7233" });', coverage = "fragment" }
+note = "Pinned: one NativeConnection created once in run() at worker startup."
+
+[[examples]]
+expected = "ok"
+input = { kind = "content", path = "src/server.ts", content = 'async function start() { const connection = await Connection.connect({ address: "localhost:7233" }); fastify.decorate("temporal", new Client({ connection })); await fastify.listen({ port: 3000 }); }', coverage = "fragment" }
+note = "One Connection opened at API startup and shared with every route."
+
+[[examples]]
+expected = "ok"
+input = { kind = "content", path = "src/server.ts", content = 'const client = new Client({ connection: sharedConnection });', coverage = "fragment" }
+note = "A Client built from the shared connection."

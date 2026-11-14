@@ -1,0 +1,35 @@
+# Source: Synkro finding 01a1d893-98b3-7243-a7d7-329e6547af82
+# Basis: ARCHITECTURE.md line 7; code pinned at commit 58f69c3.
+schema_version = 3
+id = "api-process-no-direct-database"
+title = "API process must not query the database directly"
+description = "The API process, meaning the Fastify server and its route handlers, does its work by talking to Temporal through the Temporal client. It is a violation for Fastify server or route code to run SQL or query Postgres itself, for example through fastify.pg, a pg Client or Pool, or another database handle, whether or not the query is parameterized. Starting, signalling, querying or describing workflows through the Temporal client is allowed, and so is database access inside Temporal activities run by the worker."
+mode = "flag"
+severity = "high"
+remediation = "Remove the database call from the Fastify code. Start or query a Temporal workflow through the Temporal client instead, and put the database access in an activity run by the worker."
+evaluation = { kind = "semantic" }
+
+[[examples]]
+expected = "violation"
+input = { kind = "content", path = "src/server.ts", content = '  const { rows } = await fastify.pg.query(', coverage = "fragment" }
+note = "Pinned GET /orders/:id handler: runs SQL from the Fastify process."
+
+[[examples]]
+expected = "violation"
+input = { kind = "content", path = "src/routes/orders.ts", content = 'fastify.get("/orders/:id", async (req) => { const { rows } = await pool.query("SELECT status FROM orders WHERE id = $1", [req.params.id]); return rows[0]; });', coverage = "fragment" }
+note = "A parameterized query is still a direct database query from a route."
+
+[[examples]]
+expected = "ok"
+input = { kind = "content", path = "src/server.ts", content = '  const handle = await client.workflow.start(paymentWorkflow, {', coverage = "fragment" }
+note = "Pinned POST /payments handler: starts a workflow through the Temporal client."
+
+[[examples]]
+expected = "ok"
+input = { kind = "content", path = "src/routes/orders.ts", content = 'const status = await client.workflow.getHandle(workflowId).query("orderStatus");', coverage = "fragment" }
+note = "Reads state through a workflow query instead of SQL."
+
+[[examples]]
+expected = "ok"
+input = { kind = "content", path = "src/activities.ts", content = 'await pg.query("INSERT INTO orders (user_id, amount, charge_id, status) VALUES ($1, $2, $3, $4)", [userId, amount, chargeId, "paid"]);', coverage = "fragment" }
+note = "An activity run by the worker, where database access belongs."

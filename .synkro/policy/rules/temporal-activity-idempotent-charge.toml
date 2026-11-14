@@ -1,0 +1,40 @@
+# Source: Synkro finding 01a1d893-98bc-7c60-ad8c-5ac6a6cb9d31
+# Basis: Temporal activity-definition documentation as recorded by the finding; code pinned at commit 58f69c3.
+schema_version = 3
+id = "temporal-activity-idempotent-charge"
+title = "Card-charging activities must send an idempotency key"
+description = "Temporal retries activities, so a Temporal activity that charges a card must send the payment provider an idempotency key that stays the same on every retry of that activity. It is a violation for activity code to create a charge with no idempotency key, or with a key generated afresh on each attempt. Charge requests that carry a retry-stable key are allowed, and requests that do not create a charge, such as reading a charge or sending a notification, are outside this rule."
+mode = "flag"
+severity = "high"
+remediation = "Send an idempotency key with every charge request (for Stripe, the Idempotency-Key header or the SDK idempotencyKey option), and derive it from values that do not change between retries, such as the workflow run ID and the activity ID."
+evaluation = { kind = "semantic" }
+
+[[examples]]
+expected = "violation"
+input = { kind = "content", path = "src/activities.ts", content = '  const res = await fetch("https://api.stripe.com/v1/charges", {', coverage = "fragment" }
+note = "Pinned chargeCard request: its headers carry only Authorization, with no Idempotency-Key."
+
+[[examples]]
+expected = "violation"
+input = { kind = "content", path = "src/activities.ts", content = 'const charge = await stripe.charges.create({ amount: cents, currency: "usd", source: cardToken });', coverage = "fragment" }
+note = "An SDK charge with no idempotencyKey option."
+
+[[examples]]
+expected = "violation"
+input = { kind = "content", path = "src/activities.ts", content = 'const res = await fetch("https://api.stripe.com/v1/charges", { method: "POST", headers: { Authorization: auth, "Idempotency-Key": randomUUID() }, body });', coverage = "fragment" }
+note = "A key generated on each attempt changes on retry, so a retry can still charge again."
+
+[[examples]]
+expected = "ok"
+input = { kind = "content", path = "src/activities.ts", content = 'const info = activityInfo(); const res = await fetch("https://api.stripe.com/v1/charges", { method: "POST", headers: { Authorization: auth, "Idempotency-Key": `${info.workflowExecution.runId}-${info.activityId}` }, body });', coverage = "fragment" }
+note = "The key is built from the workflow run ID and activity ID, which do not change between retries."
+
+[[examples]]
+expected = "ok"
+input = { kind = "content", path = "src/activities.ts", content = 'const charge = await stripe.charges.create({ amount: cents, currency: "usd", source: cardToken }, { idempotencyKey });', coverage = "fragment" }
+note = "An SDK charge that passes an idempotency key supplied by the workflow."
+
+[[examples]]
+expected = "ok"
+input = { kind = "content", path = "src/activities.ts", content = '  const res = await fetch(notifyUrl, {', coverage = "fragment" }
+note = "Pinned notifyCustomer request: a webhook notification, not a card charge."

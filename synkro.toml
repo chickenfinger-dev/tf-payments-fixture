@@ -12,7 +12,3 @@ path = "cwe-baseline"
 [dependencies.tf-review]
 source = "path"
 path = ".synkro/policy"
-
-[dependencies.user]
-source = "path"
-path = "/root/.synkro/policy"

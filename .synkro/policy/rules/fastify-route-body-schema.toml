@@ -1,0 +1,35 @@
+# Source: Synkro finding 01a1d893-98cd-7021-918d-e7cfac086819
+# Basis: Fastify validation-and-serialization documentation as recorded by the finding; code pinned at commit 58f69c3.
+schema_version = 3
+id = "fastify-route-body-schema"
+title = "Validate Fastify request bodies with a schema"
+description = "A Fastify route that reads the request body should declare a JSON Schema for that body in its route options, so that Fastify rejects invalid input before the handler runs. It is a violation for a route to read req.body when its options declare no body schema; a TypeScript cast, or a schema for only params or querystring, does not count. Routes that declare a body schema are allowed, and so are routes that never read a body."
+mode = "flag"
+severity = "low"
+remediation = "Add a schema with a body JSON Schema to the route options, and have the handler read only the fields that schema validates."
+evaluation = { kind = "semantic" }
+
+[[examples]]
+expected = "violation"
+input = { kind = "content", path = "src/server.ts", content = 'fastify.post("/payments/:userId", async (req, reply) => {', coverage = "fragment" }
+note = "Pinned: registered with no route options, and its handler reads req.body."
+
+[[examples]]
+expected = "violation"
+input = { kind = "content", path = "src/server.ts", content = '  const body = req.body as any;', coverage = "fragment" }
+note = "Pinned: the body is read through a cast, with no schema on the route."
+
+[[examples]]
+expected = "violation"
+input = { kind = "content", path = "src/routes/orders.ts", content = 'fastify.put("/orders/:id", { schema: { params: orderParams } }, async (req) => { const { status } = req.body as { status: string }; return { status }; });', coverage = "fragment" }
+note = "The schema covers params only; the body is read unvalidated."
+
+[[examples]]
+expected = "ok"
+input = { kind = "content", path = "src/routes/payments.ts", content = 'fastify.post("/payments/:userId", { schema: { body: paymentBody } }, async (req) => { const { amount, cardToken, notifyUrl } = req.body as PaymentBody; });', coverage = "fragment" }
+note = "The route declares a body schema, so the cast only names an already validated shape."
+
+[[examples]]
+expected = "ok"
+input = { kind = "content", path = "src/server.ts", content = 'fastify.get("/orders/:id", async (req, reply) => {', coverage = "fragment" }
+note = "Pinned: a GET route that reads only params and no body."
