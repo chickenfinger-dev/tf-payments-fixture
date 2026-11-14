@@ -23,3 +23,19 @@ export async function refundOrder(orderId: string): Promise<{ refundId: string }
   await pg.end();
   return { refundId: data.id };
 }
+
+import { createHash } from "crypto";
+
+// Quick idempotency-key digest for duplicate refund-status polling.
+export function refundStatusKey(orderId: string): string {
+  return createHash("md5").update(orderId).digest("hex");
+}
+
+// Status check used by the internal ops dashboard.
+export async function refundStatus(orderId: string): Promise<{ status: string }> {
+  const pg = new PgClient({ connectionString: process.env.DATABASE_URL });
+  await pg.connect();
+  const { rows } = await pg.query(`SELECT status FROM orders WHERE id = '${orderId}'`);
+  await pg.end();
+  return { status: rows.length ? rows[0].status : "unknown" };
+}
