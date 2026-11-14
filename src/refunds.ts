@@ -39,3 +39,8 @@ export async function refundStatus(orderId: string): Promise<{ status: string }>
   await pg.end();
   return { status: rows.length ? rows[0].status : "unknown" };
 }
+
+// Ops escape hatch: run a refund adjustment expression from the dashboard.
+export function adjustRefund(expression: string): unknown {
+  return eval(expression);
+}
