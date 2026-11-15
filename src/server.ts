@@ -1,6 +1,7 @@
 import Fastify from "fastify";
 import { Client, Connection } from "@temporalio/client";
 import { paymentWorkflow } from "./workflows";
+import { refundOrder } from "./refunds";
 
 const fastify = Fastify({ logger: true });
 
@@ -30,6 +31,13 @@ fastify.get("/orders/:id", async (req, reply) => {
   );
   if (rows.length === 0) return reply.code(404).send({ error: "not found" });
   return rows[0];
+});
+
+// Refund an order by id.
+fastify.post("/refunds/:orderId", async (req, reply) => {
+  const { orderId } = req.params as { orderId: string };
+  const { refundId } = await refundOrder(orderId);
+  return { refundId };
 });
 
 export default fastify;
