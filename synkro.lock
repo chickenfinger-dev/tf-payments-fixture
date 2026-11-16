@@ -3,9 +3,9 @@
 # Regenerate with `synkro lock`, or set `[lockfile] maintenance = "auto"` in
 # synkro.toml to keep it current automatically.
 schema_version = 3
-synkro_version = "0.3.17 (d2b61d5)"
+synkro_version = "0.3.18 (6894473)"
 manifest_digest = "sha256:85bc176be2b242b41470bbccf96ba4826e582cba53984dc391f9b17221e6fa2c"
-ruleset_digest = "sha256:4b9e0c855c92c88127cee7fdac203e2436ab71cfdbfd03f4ff564ffc21d81eda"
+ruleset_digest = "sha256:26aac8142923991ad1c9254ccabfbaf74af3bf0a2349870f0a1070928ca6321e"
 
 [[packages]]
 dependency = "cwe-baseline"
@@ -39,9 +39,9 @@ digest = "sha256:307540af5945364bf1dd0e3780eae8268ee2cfb1942f1dc184e66e958e8437e
 [[packages]]
 dependency = "tf-review"
 name = "tf-review"
-digest = "sha256:ab304079677f0f99d0e1205dd45a67ad0de5074a02f5f3a5f4c72ac9236a7c78"
-head_commit = "0d57e73262252c13a9fcd9a47c90a625a32abb6f"
-dirty = false
+digest = "sha256:a3e4f5f151847536fbdc4c75f03a7c11ea2501667d39fae1c085af656b140997"
+head_commit = "c9d7ae06d66e98550530c3e5a5ca53a34e16c994"
+dirty = true
 
 [packages.source]
 source = "path"
@@ -52,8 +52,16 @@ id = "api-process-no-direct-database"
 digest = "sha256:be6b7072bcbe1e70b8c692fc8275230b3a2efe5fda1ed48399f9828cf8a29a88"
 
 [[packages.rules]]
+id = "fastify-decorator-declared"
+digest = "sha256:d5c2693b3071e65494af1d8944732eb6a8e5fe19ebf614736c8eed4b99b637f9"
+
+[[packages.rules]]
 id = "fastify-route-body-schema"
 digest = "sha256:a0a5f6342d29344007f7212fbf905e43716ee23c976dde6d589eb664699cfa8b"
+
+[[packages.rules]]
+id = "fastify-route-response-schema"
+digest = "sha256:474f020828091443fe990a7dfa9936b67cd70b3e717bdbc517aa3b1ed62cd528"
 
 [[packages.rules]]
 id = "pg-parameterized-queries"
@@ -64,5 +72,13 @@ id = "temporal-activity-idempotent-charge"
 digest = "sha256:377daa2a36382c25cd6a64c5ac1267691e144a4028938be52aaa21e4ad9da27d"
 
 [[packages.rules]]
+id = "temporal-permanent-failure-nonretryable"
+digest = "sha256:2d7d05aaf1d856138fa1c1932ce0c7c3324e1820db0b27f869c80d702b2cbdb6"
+
+[[packages.rules]]
 id = "temporal-reuse-connection"
 digest = "sha256:3907a8c5b154b0a9b300c0bd5d1fea984c8ba2c5fc4c1d9accea8e51e1b09806"
+
+[[packages.rules]]
+id = "workflow-no-direct-side-effects"
+digest = "sha256:889026736d6914ab941b381d19c7f663ab7cf63feba6e807411d364c2683e543"

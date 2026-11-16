@@ -1,0 +1,28 @@
+schema_version = 3
+id = "temporal-permanent-failure-nonretryable"
+title = "Permanent activity failures must not be retried"
+description = "A Temporal activity must mark a failure as non-retryable when its own code detects a permanent failure, such as a 4xx response from the payment provider that a retry cannot fix. It is a violation for activity code to throw a plain error for a response it can tell is permanent, because Temporal then retries the activity. Plain errors for transient failures, such as 5xx responses, are allowed."
+mode = "flag"
+severity = "medium"
+remediation = "Mark the error as non-retryable as the Temporal error-handling guide describes for permanent failures, and keep a plain error only for failures that a retry can fix."
+evaluation = { kind = "semantic" }
+
+[[examples]]
+expected = "violation"
+input = { kind = "content", path = "src/activities.ts", content = '  if (!res.ok) throw new Error(`stripe charge failed: ${res.status}`);', coverage = "fragment" }
+note = "Pinned chargeCard throws a plain Error for every non-OK response, including 4xx card declines that a retry cannot fix."
+
+[[examples]]
+expected = "ok"
+input = { kind = "content", path = "src/activities.ts", content = '  if (res.status >= 500) throw new Error(`stripe unavailable: ${res.status}`);', coverage = "fragment" }
+note = "A 5xx response is transient, so a plain error that Temporal retries is allowed."
+
+[[examples]]
+expected = "violation"
+input = { kind = "content", path = "src/activities.ts", content = '  if (res.status === 402) throw new Error(`card declined: ${res.status}`);', coverage = "fragment" }
+note = "A 402 card decline is permanent, yet it is thrown as a plain Error that Temporal retries."
+
+[[examples]]
+expected = "ok"
+input = { kind = "content", path = "src/activities.ts", content = '  if (res.status === 402) throw ApplicationFailure.nonRetryable(`card declined: ${res.status}`);', coverage = "fragment" }
+note = "The same permanent decline is marked non-retryable, so Temporal does not retry it."

@@ -1,0 +1,31 @@
+# Source: Fastify docs, Decorators: "To access decorated properties, use the name provided to the decoration API".
+# Tested: fastify-lab/test-decorator-undeclared.mjs (Fastify 5.12.8) - an undeclared fastify.pg makes the request fail with 500; a declared one serves 200. The docs do not state this failure mode.
+# Pinned code: src/server.ts line 28 at commit 0d57e73; package.json has no @fastify/postgres and no fastify.decorate call exists.
+schema_version = 3
+id = "fastify-decorator-declared"
+title = "Route code reads only declared Fastify decorators"
+description = "A Fastify route may read a decorated property such as fastify.pg only if the application declares it with fastify.decorate or registers a plugin that does. It is a violation for a route to read a fastify.<name> property that nothing in the application declares, because the request then fails with a 500 error at runtime. Reading a decorator the application declares is allowed."
+mode = "flag"
+severity = "medium"
+remediation = "Declare the decorator with fastify.decorate, or register the plugin that provides it, before the routes that use it are loaded, or remove the reference."
+evaluation = { kind = "semantic" }
+
+[[examples]]
+expected = "violation"
+input = { kind = "content", path = "src/server.ts", content = "  const { rows } = await fastify.pg.query(", coverage = "fragment" }
+note = "Pinned GET /orders/:id reads fastify.pg, which the pinned application never declares or registers."
+
+[[examples]]
+expected = "violation"
+input = { kind = "content", path = "src/routes/refunds.ts", content = 'fastify.post("/refunds/:id", async (req) => { const row = await fastify.redis.get(req.params.id); return row; });', coverage = "fragment" }
+note = "Reads fastify.redis, which no decorate call or plugin in the application provides."
+
+[[examples]]
+expected = "ok"
+input = { kind = "content", path = "src/plugins/db.ts", content = 'fastify.decorate("pg", pool);', coverage = "fragment" }
+note = "The application declares the pg decorator before any route reads it."
+
+[[examples]]
+expected = "ok"
+input = { kind = "content", path = "src/routes/orders.ts", content = 'fastify.get("/orders/:id", async (req) => { const { rows } = await fastify.pg.query("SELECT id FROM orders WHERE id = $1", [req.params.id]); return rows[0]; });', coverage = "fragment" }
+note = "Allowed when the application declares pg in a plugin, as the decorate example above does; the fragment alone does not show the declaration."

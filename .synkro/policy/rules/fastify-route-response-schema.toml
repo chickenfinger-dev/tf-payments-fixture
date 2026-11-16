@@ -1,0 +1,31 @@
+# Source: Fastify docs, Validation-and-Serialization: an output schema "can drastically increase throughput and help prevent accidental disclosure of sensitive information".
+# Tested: fastify-lab/test-response-schema.mjs (Fastify 5.12.8) - without a response schema a sensitive column is serialized; with one it is dropped.
+# Pinned code: src/server.ts line 32 at commit 0d57e73.
+schema_version = 3
+id = "fastify-route-response-schema"
+title = "Routes returning database rows declare a response schema"
+description = "A Fastify route that returns a database row, or an object built from one, must declare a response JSON Schema for its success status so that only the fields the schema lists are serialized. It is a violation to return a database row from a route whose options declare no response schema. Routes that declare a response schema for the returned fields are allowed, and so are routes that return a small object they build themselves."
+mode = "flag"
+severity = "medium"
+remediation = "Add a response schema for the 200 status in the route options that lists only the fields the client may see, and keep returning the row."
+evaluation = { kind = "semantic" }
+
+[[examples]]
+expected = "violation"
+input = { kind = "content", path = "src/server.ts", content = "  return rows[0];", coverage = "fragment" }
+note = "Pinned GET /orders/:id returns the raw database row, and its route declares no response schema."
+
+[[examples]]
+expected = "violation"
+input = { kind = "content", path = "src/routes/orders.ts", content = 'fastify.get("/orders/:id", async (req) => { const { rows } = await pg.query("SELECT * FROM orders WHERE id = $1", [req.params.id]); return rows[0]; });', coverage = "fragment" }
+note = "Returns a SELECT * row with no response schema, so every column, including charge identifiers, is serialized."
+
+[[examples]]
+expected = "ok"
+input = { kind = "content", path = "src/routes/orders.ts", content = 'fastify.get("/orders/:id", { schema: { response: { 200: orderView } } }, async (req) => { const { rows } = await pg.query("SELECT id, status, amount FROM orders WHERE id = $1", [req.params.id]); return rows[0]; });', coverage = "fragment" }
+note = "The route declares the fields it returns, so the serializer drops anything else."
+
+[[examples]]
+expected = "ok"
+input = { kind = "content", path = "src/server.ts", content = "  return { workflowId: handle.workflowId };", coverage = "fragment" }
+note = "Pinned POST /payments returns a small object it builds itself, not a database row."

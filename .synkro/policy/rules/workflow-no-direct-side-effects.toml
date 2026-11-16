@@ -1,0 +1,33 @@
+schema_version = 3
+id = "workflow-no-direct-side-effects"
+title = "Workflow code must not perform side effects directly"
+description = "Temporal workflow code must not perform side effects itself: no database queries, card charges or HTTP calls. Those belong in activities, which the workflow calls through proxyActivities. It is a violation for workflow code to call fetch, a database client or a payment SDK directly. Calling a proxied activity is allowed."
+mode = "flag"
+severity = "high"
+remediation = "Move the side effect into an activity in the activities module and call it from the workflow through proxyActivities."
+evaluation = { kind = "semantic" }
+
+[[examples]]
+expected = "violation"
+input = { kind = "content", path = "src/workflows.ts", content = 'const res = await fetch("https://api.stripe.com/v1/charges", {', coverage = "fragment" }
+note = "Workflow code calls HTTP directly, which makes the workflow non-deterministic and repeats the charge on replay."
+
+[[examples]]
+expected = "ok"
+input = { kind = "content", path = "src/workflows.ts", content = '  const chargeId = await chargeCard(userId, amount, cardToken);', coverage = "fragment" }
+note = "The workflow calls a proxied activity, which performs the side effect."
+
+[[examples]]
+expected = "violation"
+input = { kind = "content", path = "src/workflows.ts", content = 'await pg.query("INSERT INTO orders (user_id, amount, charge_id, status) VALUES ($1, $2, $3, $4)", [userId, amount, chargeId, "paid"]);', coverage = "fragment" }
+note = "Workflow code writes to Postgres directly, so the write runs during replay as well as the first execution."
+
+[[examples]]
+expected = "violation"
+input = { kind = "content", path = "src/workflows.ts", content = 'const charge = await stripe.charges.create({ amount: cents, currency: "usd", source: cardToken }, { idempotencyKey });', coverage = "fragment" }
+note = "Workflow code calls the payment SDK directly instead of through a proxied activity."
+
+[[examples]]
+expected = "ok"
+input = { kind = "content", path = "src/workflows.ts", content = 'const { chargeCard } = proxyActivities<typeof activities>({ startToCloseTimeout: "5 minutes" });', coverage = "fragment" }
+note = "Declaring the proxied activities is allowed; the side effect itself runs in the activity."
