@@ -10,7 +10,7 @@ async function main(): Promise<void> {
   ]);
   console.log(JSON.stringify(outcome));
   if (outcome.kind === "hung") {
-    console.error("DEFECT REPRODUCED: GET /health never responded within 3s");
+    console.error("CHECK FAILED: GET /health never responded within 3s");
     process.exitCode = 1;
   }
   process.exit(process.exitCode ?? 0);

@@ -30,7 +30,7 @@ async function main(): Promise<void> {
       const description = await handle.describe();
       console.log(JSON.stringify({ outcome, status: description.status.name }));
       if (outcome.kind !== "completed") {
-        console.error("DEFECT REPRODUCED: approval signal sent, workflow still running after 5s");
+        console.error("CHECK FAILED: approval signal sent, workflow still running after 5s");
         process.exitCode = 1;
       }
     });
