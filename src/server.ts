@@ -1,6 +1,7 @@
 import Fastify from "fastify";
 import { Client, Connection } from "@temporalio/client";
 import { paymentWorkflow } from "./workflows";
+import { settlementRoutes } from "./settlement-routes";
 
 const fastify = Fastify({ logger: true });
 
@@ -31,5 +32,7 @@ fastify.get("/orders/:id", async (req, reply) => {
   if (rows.length === 0) return reply.code(404).send({ error: "not found" });
   return rows[0];
 });
+
+fastify.register(settlementRoutes);
 
 export default fastify;
